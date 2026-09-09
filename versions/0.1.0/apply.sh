@@ -65,13 +65,40 @@ TARGET=$TARGET
 CREATED_AT=$STAMP
 EOF
 
+rollback() {
+  set +e
+  echo "ROLLBACK_STATUS=STARTED" >&2
+  for rel in "${TOUCHED[@]}"; do
+    if [[ -f "$BACKUP_PATH/$rel" ]]; then
+      mkdir -p "$TARGET/$(dirname "$rel")"
+      cp -a "$BACKUP_PATH/$rel" "$TARGET/$rel"
+    fi
+  done
+  for rel in "${NEW_FILES[@]}"; do
+    rm -f "$TARGET/$rel"
+  done
+  rmdir "$TARGET/multimodal/tarko/agent-ui/src/standalone/developer" 2>/dev/null || true
+  echo "ROLLBACK_STATUS=COMPLETE" >&2
+}
+
+on_error() {
+  local code=$?
+  trap - ERR
+  rollback
+  echo "PATCH_APPLY_STATUS=ROLLED_BACK" >&2
+  exit "$code"
+}
+trap on_error ERR
+
 python3 "$PATCHER" "$TARGET" "$PAYLOAD"
 
 # Deterministic post-apply checks. Do not build or restart here; the execution agent does that after acceptance checks.
-grep -q "developerHubController" "$TARGET/multimodal/tarko/agent-server/src/api/routes/system.ts" || fail "Backend route registration missing"
-grep -q "path=\"/developer-hub\"" "$TARGET/multimodal/tarko/agent-ui/src/standalone/app/App.tsx" || fail "Developer Hub route missing"
-grep -q "DeveloperHubSettingsButton" "$TARGET/multimodal/tarko/agent-ui/src/standalone/navbar/Navbar.tsx" || fail "Navbar Settings entry missing"
-grep -q "DeveloperHubSettingsButton" "$TARGET/multimodal/tarko/agent-ui/src/standalone/home/WelcomePage.tsx" || fail "Home Settings entry missing"
+grep -q "developerHubController" "$TARGET/multimodal/tarko/agent-server/src/api/routes/system.ts"
+grep -q "path=\"/developer-hub\"" "$TARGET/multimodal/tarko/agent-ui/src/standalone/app/App.tsx"
+grep -q "DeveloperHubSettingsButton" "$TARGET/multimodal/tarko/agent-ui/src/standalone/navbar/Navbar.tsx"
+grep -q "DeveloperHubSettingsButton" "$TARGET/multimodal/tarko/agent-ui/src/standalone/home/WelcomePage.tsx"
+
+trap - ERR
 
 printf '%s\n' \
   "PATCH_VERSION=$PATCH_VERSION" \
