@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "patchVersion": "0.1.0",
+  "phase": 1,
+  "name": "Developer Hub - Source Code Baseline Export",
+  "target": {
+    "agentTarsVersion": "0.3.0",
+    "upstreamRepository": "https://github.com/bytedance/UI-TARS-desktop.git",
+    "upstreamCommit": "c2ad42e3eb9b27830db41a3e6f51ca7179d9b168",
+    "targetPath": "/var/www/TAR/source/agent-tars"
+  },
+  "acceptanceGate": {
+    "path": "Settings -> Developer Hub -> Download Source Code",
+    "required": true,
+    "checks": [
+      "Developer Hub is reachable from Settings on home and session UI",
+      "Download Source Code returns a valid ZIP",
+      "ZIP contains current TAR working-tree source code",
+      "ZIP contains BASELINE_MANIFEST.json",
+      "ZIP excludes .env/.env.*, .git, node_modules, logs, screenshots, recordings, backups, caches, build artifacts and temporary files",
+      "server performs a high-confidence secret scan before download",
+      "no browser-supplied filesystem path is accepted"
+    ]
+  },
+  "scope": {
+    "included": [
+      "Developer Hub route and UI",
+      "Settings -> Developer Hub navigation",
+      "source-info endpoint",
+      "server-side secure source ZIP export"
+    ],
+    "excludedUntilLaterPhases": [
+      "Model & API Settings",
+      "GitHub controls",
+      "Bash terminal"
+    ]
+  },
+  "applyScript": "apply.sh",
+  "patchScript": "patches/0001-developer-hub-source-download.py"
+}

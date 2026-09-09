@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "name": "TAR Patch Layer",
+  "latestPatchVersion": "0.1.0",
+  "target": {
+    "product": "Agent TARS",
+    "version": "0.3.0",
+    "upstreamRepository": "https://github.com/bytedance/UI-TARS-desktop.git",
+    "upstreamCommit": "c2ad42e3eb9b27830db41a3e6f51ca7179d9b168",
+    "serverTargetPath": "/var/www/TAR/source/agent-tars"
+  },
+  "apply": "./apply.sh",
+  "phases": [
+    {
+      "version": "0.1.0",
+      "name": "Developer Hub - Source Code Baseline Export",
+      "status": "ready",
+      "acceptanceGate": "Settings -> Developer Hub -> Download Source Code"
+    },
+    {
+      "version": "0.2.0",
+      "name": "Model & API Settings",
+      "status": "planned"
+    },
+    {
+      "version": "0.3.0",
+      "name": "Developer Hub GitHub + Bash",
+      "status": "planned"
+    }
+  ]
+}
